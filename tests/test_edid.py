@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from unittest.mock import patch as mock_patch
 from lg_hdr.edid import EdidError, HEADER, LG_ID, hdr_blocks, inspect, patch
-from lg_hdr.__main__ import doctor, main, regular_output
+from lg_hdr.__main__ import MAX_EDID_BYTES, doctor, main, read_edid, regular_output
 
 
 def checksum(data, start=0):
@@ -146,9 +146,6 @@ class FileAndCliTests(unittest.TestCase):
             self.assertNotIn('00ffffffffffff00',json.dumps(report))
 
 
-if __name__ == '__main__': unittest.main()
-
-
 class AuthorizedRealFixtureTests(unittest.TestCase):
     def test_real_edid_matches_authorized_correction_exactly(self):
         root=Path(__file__).resolve().parents[1]/'examples'/'edid'
@@ -158,3 +155,79 @@ class AuthorizedRealFixtureTests(unittest.TestCase):
         self.assertEqual(result,expected)
         self.assertEqual([c['offset'] for c in changes],['0x9f','0xff'])
         self.assertTrue(inspect(expected)['checksums_valid'])
+
+
+class ReadLimitAndDiagnosticTests(unittest.TestCase):
+    def test_reader_accepts_largest_structurally_valid_edid(self):
+        data = bytearray(fixture())
+        data[126] = 255
+        checksum(data)
+        data.extend(bytes(MAX_EDID_BYTES - len(data)))
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp)/'maximum.bin'
+            path.write_bytes(data)
+            self.assertEqual(read_edid(path), bytes(data))
+            self.assertTrue(inspect(read_edid(path))['checksums_valid'])
+
+    def test_reader_never_requests_unbounded_input(self):
+        class BoundedStream(io.BytesIO):
+            def read(self, size=-1):
+                if not 0 <= size <= MAX_EDID_BYTES + 1:
+                    raise AssertionError('Unbounded input read')
+                return super().read(size)
+
+        stream = BoundedStream(bytes(MAX_EDID_BYTES * 2))
+        with mock_patch.object(Path, 'open', return_value=stream):
+            with self.assertRaisesRegex(EdidError, 'size limit'):
+                read_edid(Path('oversized.bin'))
+
+    def test_oversized_input_refused_by_both_file_commands(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp)/'oversized.bin'
+            output = Path(temp)/'output.bin'
+            path.write_bytes(bytes(MAX_EDID_BYTES + 1))
+            for args in (['inspect', str(path)], ['patch', str(path), str(output)]):
+                stderr = io.StringIO()
+                with self.subTest(command=args[0]), mock_patch('lg_hdr.__main__.os.geteuid', return_value=1000), contextlib.redirect_stderr(stderr):
+                    self.assertEqual(main(args), 2)
+                    self.assertIn('size limit', stderr.getvalue())
+                    self.assertFalse(output.exists())
+
+    def test_partial_diagnostic_preserves_good_display_and_returns_failure(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            for name, data in [('card1-DP-3', fixture()), ('card1-HDMI-A-1', b'broken')]:
+                connector = root/name
+                connector.mkdir()
+                (connector/'status').write_text('connected')
+                (connector/'edid').write_bytes(data)
+            report = doctor(root)
+            self.assertEqual(len(report['displays']), 2)
+            self.assertEqual(sum('error' in d for d in report['displays']), 1)
+            stdout = io.StringIO()
+            with mock_patch('lg_hdr.__main__.os.geteuid', return_value=1000), mock_patch('lg_hdr.__main__.doctor', return_value=report), contextlib.redirect_stdout(stdout):
+                self.assertEqual(main(['doctor']), 2)
+            self.assertEqual(json.loads(stdout.getvalue()), report)
+
+    def test_oversized_connected_display_is_reported_as_error(self):
+        with tempfile.TemporaryDirectory() as temp:
+            connector = Path(temp)/'card1-DP-3'
+            connector.mkdir()
+            (connector/'status').write_text('connected')
+            (connector/'edid').write_bytes(bytes(MAX_EDID_BYTES + 1))
+            report = doctor(Path(temp))
+            self.assertIn('size limit', report['displays'][0]['error'])
+
+    def test_successful_diagnostic_returns_success(self):
+        with tempfile.TemporaryDirectory() as temp:
+            connector = Path(temp)/'card1-DP-3'
+            connector.mkdir()
+            (connector/'status').write_text('connected')
+            (connector/'edid').write_bytes(fixture())
+            report = doctor(Path(temp))
+            with mock_patch('lg_hdr.__main__.os.geteuid', return_value=1000), mock_patch('lg_hdr.__main__.doctor', return_value=report), contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(main(['doctor']), 0)
+
+
+if __name__ == '__main__':
+    unittest.main()

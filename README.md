@@ -55,6 +55,8 @@ python3 -m lg_hdr doctor
 O diagnóstico mostra as saídas conectadas, checksums e descritores HDR. Não
 mostra números de série nem inclui os bytes completos do EDID no relatório.
 Hashes identificam o conteúdo e também devem ser revisados antes de compartilhar.
+Se houver erro em alguma saída, o diagnóstico mantém os resultados disponíveis
+no JSON e termina com código `2`; sem erros, termina com código `0`.
 
 Inspecionar um arquivo local:
 
@@ -77,6 +79,8 @@ use os testes sintéticos para contribuir.
 A validação implementada cobre estrutura, limites dos blocos e checksums; não é
 um validador completo de conformidade EDID. Um checksum válido não garante que
 todas as características anunciadas pelo fabricante estejam corretas.
+As leituras de EDID são limitadas a 32 KiB, o tamanho máximo de um bloco base
+com 255 extensões. Entradas maiores são recusadas sem carregar o arquivo inteiro.
 
 ## Testes automatizados
 

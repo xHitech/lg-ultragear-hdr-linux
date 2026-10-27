@@ -7,6 +7,17 @@ import sys
 from .edid import EdidError, inspect, patch
 
 
+MAX_EDID_BYTES = 128 * 256  # Base block plus at most 255 extension blocks.
+
+
+def read_edid(path: Path) -> bytes:
+    with path.open('rb') as source:
+        data = source.read(MAX_EDID_BYTES + 1)
+    if len(data) > MAX_EDID_BYTES:
+        raise EdidError(f'EDID exceeds the {MAX_EDID_BYTES}-byte size limit.')
+    return data
+
+
 def regular_output(path: Path, data: bytes):
     # Avoid accidental device/firmware writes, including through a symlinked parent.
     resolved = path.resolve()
@@ -31,7 +42,7 @@ def doctor(drm_root: Path):
             if (connector/'status').read_text().strip() != 'connected':
                 continue
             result['displays'].append({'connector': connector.name,
-                                       'edid': inspect((connector/'edid').read_bytes())})
+                                       'edid': inspect(read_edid(connector/'edid'))})
         except (OSError, EdidError) as e:
             result['displays'].append({'connector': connector.name, 'error': str(e)})
     return result
@@ -48,12 +59,15 @@ def main(argv=None):
     sub.add_parser('doctor', help='Read connected displays without changing their configuration.')
     args = parser.parse_args(argv)
     try:
+        exit_code = 0
         if os.geteuid() == 0:
             raise EdidError('Run without sudo. This offline tool does not need root.')
         if args.command == 'doctor':
             result = doctor(Path('/sys/class/drm'))
+            if any('error' in display for display in result['displays']):
+                exit_code = 2
         else:
-            data = args.input.read_bytes()
+            data = read_edid(args.input)
             if args.command == 'inspect':
                 result = inspect(data)
             else:
@@ -62,7 +76,7 @@ def main(argv=None):
                 result = {'output': str(args.output), 'installed': False,
                           'changes': changes, 'edid': inspect(corrected)}
         print(json.dumps(result, indent=2, ensure_ascii=False))
-        return 0
+        return exit_code
     except (EdidError, OSError) as e:
         print(f'Error: {e}', file=sys.stderr)
         return 2
