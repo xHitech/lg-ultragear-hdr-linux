@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+build/
+dist/
+*.bin
+*.core
+*.zst
+*.log
+logs/
+local/
+*.before
+
+# Real EDIDs explicitly authorized for publication.
+!examples/edid/*.bin

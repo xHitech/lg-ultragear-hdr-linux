@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lg-ultragear-hdr-linux"
+version = "0.1.0"
+description = "Read-only HDR diagnostics and offline correction for LG GSM 0x7766 EDIDs"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{name = "xHitech"}]
+dependencies = []
+
+[project.scripts]
+lg-hdr = "lg_hdr.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["lg_hdr*"]
