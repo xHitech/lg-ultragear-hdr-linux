@@ -6,8 +6,7 @@ apagada e depois congelava. A investigação levou a um bit ausente no EDID.
 
 Aqui reuni as ferramentas de diagnóstico e correção **offline** para monitores
 LG identificados como **GSM 0x7766**, os EDIDs do meu monitor e o que consegui
-validar até agora. Desenvolvo o projeto com assistência do **Codex, da OpenAI**.
-O projeto é independente da LG, NVIDIA, Mozilla e Hyprland.
+validar até agora. O projeto é independente da LG, NVIDIA, Mozilla e Hyprland.
 
 ## Escopo desta versão
 
@@ -118,15 +117,4 @@ não há cópia de drivers NVIDIA, código do Firefox ou bibliotecas de terceiro
 [Resumo técnico dos testes locais](docs/investigation.md). Dumps de memória não
 são publicados; logs completos precisam de revisão antes de inclusão.
 
-## Autoria e colaboração
-
-Sou **[xHitech](https://github.com/xHitech)**, autor e mantenedor deste projeto.
-A ideia veio do problema que encontrei no meu monitor; os testes físicos e a
-escolha dos ajustes foram feitos por mim.
-
-O **[Codex, da OpenAI](https://developers.openai.com/codex/)** colaborou com a
-investigação dos logs e do código, implementação das ferramentas, testes
-automatizados e organização da documentação. Registro essa assistência nos
-créditos e nos commits em que ela foi utilizada.
-
-As descobertas e os patches de terceiros estão identificados na seção de fontes.
+Desenvolvido com assistência do OpenAI Codex.
