@@ -1,5 +1,7 @@
 # LG UltraGear HDR on Linux
 
+**Português** | [English](README.en.md)
+
 Criei este projeto depois de tentar usar o HDR do meu LG UltraGear no Arch Linux
 com Hyprland e uma RTX 4060 Ti. Ao ativar HDR, o monitor ficava com a imagem
 apagada e depois congelava. A investigação levou a um bit ausente no EDID.
@@ -23,6 +25,10 @@ instalador que altere o sistema ou torne a correção persistente no boot.
 O meu LG GSM 0x7766 anunciava PQ/ST2084 no EDID, mas não o descritor Static Metadata
 Type 1. Na NVIDIA 615.78.08, `nvDpyIsHDRCapable()` verifica explicitamente esse
 descritor. Sem ele, a ativação de HDR/BT2020 pode ser recusada pelo driver.
+
+Esse defeito já foi descrito em uma [proposta de patch anterior](https://www.mail-archive.com/dri-devel%40lists.freedesktop.org/msg630093.html).
+Aqui documentei minha reprodução, reuni as ferramentas offline e compartilhei os
+arquivos e resultados dos meus testes; não reivindico a descoberta original.
 
 A correção muda somente o bit ausente e o checksum da extensão CTA. Mantém os
 modos, frequências, primárias, luminâncias e demais dados do EDID original.
@@ -120,5 +126,10 @@ não há cópia de drivers NVIDIA, código do Firefox ou bibliotecas de terceiro
 [Origem, checksums e limites dos exemplos](examples/edid/README.md).
 [Resumo técnico dos testes locais](docs/investigation.md). Dumps de memória não
 são publicados; logs completos precisam de revisão antes de inclusão.
+
+## Compartilhar os resultados
+
+Preparei um [texto de divulgação em português e inglês](docs/announcement.md)
+com as evidências, o crédito ao trabalho anterior e os limites do teste.
 
 Desenvolvido com assistência do OpenAI Codex.
