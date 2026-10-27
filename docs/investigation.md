@@ -1,10 +1,11 @@
-# Evidências do caso investigado
+# Minha investigação do HDR
 
-Ambiente: Arch Linux, NVIDIA RTX 4060 Ti, nvidia-open/NVIDIA 615.78.08,
+Meu ambiente: Arch Linux, NVIDIA RTX 4060 Ti, nvidia-open/NVIDIA 615.78.08,
 Hyprland 0.56.2, Aquamarine 0.15.1 e Firefox 158.0.1.
 
-Este resumo contém apenas informações técnicas selecionadas. Não inclui
-endereços de rede, credenciais, URLs assinadas, cookies ou dumps de memória.
+Reuni aqui os resultados da investigação do meu monitor, feita com assistência
+do Codex. Selecionei os dados técnicos necessários e deixei de fora endereços de
+rede, credenciais, URLs assinadas, cookies e dumps de memória.
 
 ## Antes da correção do EDID
 
@@ -22,12 +23,12 @@ As sondagens de validação atômica do driver retornaram:
 As associações de CRTC no kernel e no backend coincidiam nessa rodada;
 portanto, uma divergência de associação não explicou o caso.
 
-O EDID anunciava PQ/ST2084, mas omitira o bit Type 1 que a função
+O EDID do meu monitor anunciava PQ/ST2084, mas omitira o bit Type 1 que a função
 `nvDpyIsHDRCapable()` da NVIDIA 615.78.08 exige.
 
-## Depois da correção, aplicada manualmente fora deste projeto
+## Depois que apliquei a correção manualmente
 
-O compositor registrou:
+Os logs dos meus testes registraram:
 
 - 2560×1440 a 164,95599 Hz.
 - Formato `XBGR2101010`, com 10 bits por canal de cor.
@@ -35,21 +36,22 @@ O compositor registrou:
 - Ajustes SDR 2.0, 1.8, 1.5 e 1.2 aplicados em sequência.
 - Retorno a `XRGB8888` e `srgb` ao término do teste temporário.
 
-O usuário relatou ausência do congelamento completo observado antes e preferiu
-prosseguir com brilho SDR 1.5. Não foi medida a luminância nem a fidelidade de
-cores. A preferência de brilho não é uma calibração universal.
+Não tive o congelamento completo observado antes e escolhi continuar os testes
+com brilho SDR 1.5. Ainda não medi a luminância nem a fidelidade de cores.
+Esse ajuste é minha preferência de uso, não uma calibração universal.
 
 ## Firefox/YouTube
 
 As estatísticas de reprodução informaram VP9 Profile 2 de 10 bits, formato
 YouTube 337, 3840×2160 a 60 fps e cor `smpte2084 (PQ) / bt2020`.
 Isso confirma o conteúdo HDR recebido, não a correção da apresentação física.
-O usuário relatou vídeo lavado; a comparação com um player independente ainda
-não foi concluída. Não há diagnóstico final para essa etapa.
+Percebi a imagem do vídeo mais lavada ao habilitar HDR no Firefox. Ainda não
+concluí a comparação com um player independente; por isso, não fechei o
+diagnóstico dessa etapa.
 
 ## Estado do projeto
 
-O repositório oferece diagnóstico por leitura e geração de uma cópia offline.
-Não contém os scripts experimentais que alteraram a saída ou instalaram o
-firmware. Publicar este resumo não significa que instalação persistente,
-calibração, Firefox ou compatibilidade com outros dispositivos estejam validados.
+Nesta versão, publiquei o diagnóstico por leitura e a geração de uma cópia
+offline. Mantive fora do repositório os scripts experimentais que usei para
+alterar a saída ou instalar o override. Ainda preciso validar instalação
+persistente, calibração, Firefox e compatibilidade com outros dispositivos.

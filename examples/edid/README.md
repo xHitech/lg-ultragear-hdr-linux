@@ -1,6 +1,8 @@
 # EDIDs reais: LG GSM 0x7766
 
-Publicação dos dois arquivos autorizada pelo proprietário do monitor.
+Os dois arquivos vieram do meu monitor LG UltraGear. Autorizei a publicação
+do original e da cópia corrigida para que outras pessoas possam reproduzir a
+análise offline.
 Os dados podem conter número de série; não contêm configurações de rede do PC.
 Os arquivos são evidências do caso investigado, não firmware universal para
 outros monitores. O projeto não instala ou aplica nenhum deles.

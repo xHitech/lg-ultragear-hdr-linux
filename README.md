@@ -1,8 +1,13 @@
 # LG UltraGear HDR on Linux
 
-Ferramentas de diagnóstico por leitura e correção **offline** do EDID de monitores
-LG identificados como **GSM 0x7766**. Projeto experimental, independente da LG,
-NVIDIA, Mozilla e Hyprland.
+Criei este projeto depois de tentar usar o HDR do meu LG UltraGear no Arch Linux
+com Hyprland e uma RTX 4060 Ti. Ao ativar HDR, o monitor ficava com a imagem
+apagada e depois congelava. A investigação levou a um bit ausente no EDID.
+
+Aqui reuni as ferramentas de diagnóstico e correção **offline** para monitores
+LG identificados como **GSM 0x7766**, os EDIDs do meu monitor e o que consegui
+validar até agora. Desenvolvo o projeto com assistência do **Codex, da OpenAI**.
+O projeto é independente da LG, NVIDIA, Mozilla e Hyprland.
 
 ## Escopo desta versão
 
@@ -11,12 +16,12 @@ HDR Type 1 corrigido. Não instala essa cópia, não ativa HDR, não executa `su
 não troca modos de vídeo e não modifica firmware físico, drivers ou boot.
 Os comandos recusam execução como root e não sobrescrevem arquivos existentes.
 
-Não há promessa de risco zero para instalações ou alterações futuras. Qualquer
-etapa que altere o sistema está fora desta versão e exigirá análise separada.
+Nesta primeira versão, mantive o escopo offline. Ainda não disponibilizo um
+instalador que altere o sistema ou torne a correção persistente no boot.
 
 ## Problema investigado
 
-Um LG GSM 0x7766 anunciava PQ/ST2084 no EDID, mas não o descritor Static Metadata
+O meu LG GSM 0x7766 anunciava PQ/ST2084 no EDID, mas não o descritor Static Metadata
 Type 1. Na NVIDIA 615.78.08, `nvDpyIsHDRCapable()` verifica explicitamente esse
 descritor. Sem ele, a ativação de HDR/BT2020 pode ser recusada pelo driver.
 
@@ -27,13 +32,13 @@ PQ, checksums inválidos, dados truncados e múltiplos blocos HDR ambíguos.
 
 ### Evidências e limites
 
-Em uma máquina com Arch Linux, RTX 4060 Ti, NVIDIA 615.78.08, Hyprland 0.56.2 e
+No meu PC, com Arch Linux, RTX 4060 Ti, NVIDIA 615.78.08, Hyprland 0.56.2 e
 Aquamarine 0.15.1, o override corrigido permitiu configurar a saída em
-2560×1440 a aproximadamente 165 Hz, formato de 10 bits e preset HDR. O usuário
-relatou que o congelamento completo anterior deixou de ocorrer nesse teste.
-Isso **não comprova calibração ou fidelidade física de cores**.
+2560×1440 a aproximadamente 165 Hz, formato de 10 bits e preset HDR.
+Nesse teste, não tive mais o congelamento completo que acontecia antes.
+Ainda **não medi a luminância nem calibrei a fidelidade de cores**.
 
-A reprodução HDR no Firefox 158/YouTube continua em investigação. Receber PQ e
+Continuo investigando a reprodução HDR no Firefox 158/YouTube. Receber PQ e
 BT.2020 do serviço não comprova que toda a cadeia esteja reproduzindo as cores
 corretamente. Ajustar saturação para esconder uma falha não faz parte da solução.
 Os patches experimentais de Aquamarine não são necessários para executar este
@@ -66,7 +71,7 @@ python3 -m lg_hdr patch /caminho/para/original.bin ./corrigido.bin
 
 O destino precisa estar dentro da home do usuário ou de `/tmp`, e não pode
 existir. O EDID original não é modificado. Um arquivo que já anuncia Type 1 é
-copiado sem novas alterações. **Os EDIDs reais incluídos em `examples/edid/` foram autorizados pelo proprietário.**
+copiado sem novas alterações. **Os EDIDs reais em `examples/edid/` são do meu monitor e autorizei sua publicação.**
 Eles podem conter números de série. Não envie EDIDs de terceiros sem autorização;
 use os testes sintéticos para contribuir.
 
@@ -86,7 +91,7 @@ bytes, idempotência, corrupção, ambiguidades, proteção de arquivos e diagn�
 O CI também só executa testes offline. Há um teste adicional dos dois EDIDs reais
 autorizados em `examples/edid/`, sem acesso a hardware.
 
-## Desenvolvimento
+## O que já fiz e próximos passos
 
 - [x] Inspeção de EDID e detecção de PQ/Type 1.
 - [x] Correção offline com checksums recalculados.
@@ -112,3 +117,16 @@ não há cópia de drivers NVIDIA, código do Firefox ou bibliotecas de terceiro
 [Origem, checksums e limites dos exemplos](examples/edid/README.md).
 [Resumo técnico dos testes locais](docs/investigation.md). Dumps de memória não
 são publicados; logs completos precisam de revisão antes de inclusão.
+
+## Autoria e colaboração
+
+Sou **[xHitech](https://github.com/xHitech)**, autor e mantenedor deste projeto.
+A ideia veio do problema que encontrei no meu monitor; os testes físicos e a
+escolha dos ajustes foram feitos por mim.
+
+O **[Codex, da OpenAI](https://developers.openai.com/codex/)** colaborou com a
+investigação dos logs e do código, implementação das ferramentas, testes
+automatizados e organização da documentação. Registro essa assistência nos
+créditos e nos commits em que ela foi utilizada.
+
+As descobertas e os patches de terceiros estão identificados na seção de fontes.
